@@ -1,0 +1,8 @@
+deploy:
+  - name: Deploy OrangeHRM to jobs.frontic.co/app
+    src: /home1/frontbrc/repositories/orangehrm/
+    dest: /home1/frontbrc/jobs.frontic.co/app/
+    action: move   # o copy, según tu flujo
+    post-deploy:
+      - url: https://jobs.frontic.co/app/
+        method: GET
