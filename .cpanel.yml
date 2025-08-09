@@ -1,8 +1,19 @@
-deploy:
-  - name: Deploy OrangeHRM to jobs.frontic.co/app
-    src: /home1/frontbrc/repositories/orangehrm/
-    dest: /home1/frontbrc/jobs.frontic.co/app/
-    action: move   # o copy, según tu flujo
-    post-deploy:
-      - url: https://jobs.frontic.co/app/
-        method: GET
+---
+deployment:
+  tasks:
+    # Ruta de destino
+    - export DEPLOYPATH=/home1/frontbrc/jobs.frontic.co/app/
+
+    # Copiar archivos evitando el .git y otras carpetas innecesarias
+    - /bin/rsync -av --exclude='.git' --exclude='.gitignore' /home1/frontbrc/repositories/orangehrm/ $DEPLOYPATH
+
+    # Ajustar permisos de carpetas y archivos
+    - /bin/find $DEPLOYPATH -type d -exec chmod 755 {} \;
+    - /bin/find $DEPLOYPATH -type f -exec chmod 644 {} \;
+
+    # Ajustar permisos para carpetas que requieren escritura en OrangeHRM
+    - /bin/chmod -R 775 $DEPLOYPATH/symfony/cache
+    - /bin/chmod -R 775 $DEPLOYPATH/symfony/log
+
+    # Disparar petición para validar que el sitio está activo
+    - /usr/bin/curl -s https://jobs.frontic.co/app/ > /dev/null
